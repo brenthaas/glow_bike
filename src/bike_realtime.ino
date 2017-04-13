@@ -1,4 +1,5 @@
 #include <Adafruit_NeoPixel.h>
+#include <Delay.h>
 #ifdef __AVR__
   #include <avr/power.h>
 #endif
@@ -31,6 +32,9 @@ int gamma[] = {
   177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
   215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 };
 
+NonBlockDelay rainbow_delay1;
+NonBlockDelay rainbow_delay2;
+NonBlockDelay rainbow_delay3;
 Adafruit_NeoPixel l_strip = Adafruit_NeoPixel(FRONT_NUM_LEDS, LEFT_PIN, NEO_GRBW + NEO_KHZ800);
 Adafruit_NeoPixel r_strip = Adafruit_NeoPixel(FRONT_NUM_LEDS, RIGHT_PIN, NEO_GRBW + NEO_KHZ800);
 Adafruit_NeoPixel mid_strip = Adafruit_NeoPixel(MID_NUM_LEDS, MID_PIN, NEO_GRB + NEO_KHZ800);
@@ -77,19 +81,28 @@ void setAllPixels(Adafruit_NeoPixel strip, uint8_t r, uint8_t g, uint8_t b, uint
 //Theatre-style crawling lights with rainbow effect
 void theaterChaseRainbow(Adafruit_NeoPixel strip, uint8_t wait) {
   while (true) {
-    for (int j=0; j < 256; j++) {     // cycle all 256 colors in the wheel
-      for (int q=0; q < 3; q++) {
-        for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
-          strip.setPixelColor(strip.numPixels()-i+q, Wheel( (i+j) % 255));    //turn every third pixel on
-        }
-        strip.show();
+    if (rainbow_delay1.Timeout()) {
+      for (int j=0; j < 256; j++) {     // cycle all 256 colors in the wheel
+        for (int q=0; q < 3; q++) {
+          for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
+            if (rainbow_delay2.Timeout()) {
+              strip.setPixelColor(strip.numPixels()-i+q, Wheel( (i+j) % 255));    //turn every third pixel on
+            }
+          }
 
-        delay(wait);
+          strip.show();
 
-        for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
-          strip.setPixelColor(i+q, 0);        //turn every third pixel off
+          for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
+            if (rainbow_delay2.Timeout()) {
+              strip.setPixelColor(i+q, 0);        //turn every third pixel off
+            }
+          }
+          if (rainbow_delay2.Timeout()) {
+            rainbow_delay2.Delay(100);
+          }
         }
       }
+      rainbow_delay1.Delay(wait * 10);
     }
   }
 }
