@@ -11,7 +11,7 @@
 #define MID_NUM_LEDS 28
 
 #define FRONT_BRIGHTNESS 75
-#define MID_BRIGHTNESS 50
+#define MID_BRIGHTNESS 80
 
 Adafruit_NeoPixel l_strip = Adafruit_NeoPixel(FRONT_NUM_LEDS, LEFT_PIN, NEO_GRBW + NEO_KHZ800);
 Adafruit_NeoPixel r_strip = Adafruit_NeoPixel(FRONT_NUM_LEDS, RIGHT_PIN, NEO_GRBW + NEO_KHZ800);
@@ -75,23 +75,34 @@ void loop() {
   // fullWhite();
   // delay(2000);
 
-  rainbowFade2White(3,1,8);
-  theaterChaseRainbow(50);
+  // rainbowFade2White(3,1,8);
+  setAllPixels(l_strip, 128, 128, 128, 255);
+  setAllPixels(r_strip, 128, 128, 128, 255);
+  theaterChaseRainbow(mid_strip, 50);
+}
+
+void setAllPixels(Adafruit_NeoPixel strip, uint8_t r, uint8_t g, uint8_t b, uint8_t gma) {
+  for (uint16_t i=0; i < strip.numPixels(); i++) {
+    strip.setPixelColor(i, strip.Color(r,g,b, gamma[gma] ) );
+  }
+  strip.show();
 }
 
 //Theatre-style crawling lights with rainbow effect
-void theaterChaseRainbow(uint8_t wait) {
-  for (int j=0; j < 256; j++) {     // cycle all 256 colors in the wheel
-    for (int q=0; q < 3; q++) {
-      for (uint16_t i=0; i < mid_strip.numPixels(); i=i+3) {
-        mid_strip.setPixelColor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
-      }
-      mid_strip.show();
+void theaterChaseRainbow(Adafruit_NeoPixel strip, uint8_t wait) {
+  while (true) {
+    for (int j=0; j < 256; j++) {     // cycle all 256 colors in the wheel
+      for (int q=0; q < 3; q++) {
+        for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
+          strip.setPixelColor(strip.numPixels()-i+q, Wheel( (i+j) % 255));    //turn every third pixel on
+        }
+        strip.show();
 
-      delay(wait);
+        delay(wait);
 
-      for (uint16_t i=0; i < mid_strip.numPixels(); i=i+3) {
-        mid_strip.setPixelColor(i+q, 0);        //turn every third pixel off
+        for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
+          strip.setPixelColor(i+q, 0);        //turn every third pixel off
+        }
       }
     }
   }
